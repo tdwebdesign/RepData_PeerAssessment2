@@ -18,8 +18,22 @@ data <- read.csv("StormData.csv.bz2")
 
 ```{r}
 library(plyr)
-health <- ddply(data, ~EVTYPE , summarise, "fatalities" = sum(FATALITIES),
+health <- ddply(data, .(EVTYPE, STATE) , summarise, "fatalities" = sum(FATALITIES),
                 "injuries" = sum(INJURIES))
-health[health$fatalities == max(health$fatalities),]$EVTYPE # most fatalities
-health[health$injuries == max(health$injuries),]$EVTYPE # most injuries
+states <- unique(health$STATE)
+state_health <- data.frame()
+for (i in 1:length(states)){
+        curr <- health[health$STATE == states[i],]
+        ST <- states[i]
+        most_fatal <- max(curr$fatalities)
+        most_fatal_type <- curr[curr$fatalities == max(curr$fatalities),]$EVTYPE
+        most_injure <- max(curr$injuries)
+        most_injure_type <- curr[curr$injuries == max(curr$injuries),]$EVTYPE
+        new_data <- data.frame(ST, most_fatal, most_fatal_type, most_injure,
+                     most_injure_type)
+        if(!(most_fatal == 0 | most_injure == 0)){
+                state_health <- rbind(state_health, new_data)
+        }
+}
+state_health
 ```
